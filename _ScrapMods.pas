@@ -108,7 +108,7 @@ unit userscript;
                       cbVerbose.State := bVerbosPrevious;
                     end;
                 // end;
-            end;
+            // end;
         end;
     end;
 
