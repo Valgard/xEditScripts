@@ -7,7 +7,7 @@
 unit userscript;
 
     const
-        scriptVersion = '1.1';
+        scriptVersion = '1.2';
 
     var
         slMasters, slPlugins : TStringList;
@@ -345,6 +345,12 @@ unit userscript;
         AddMessage('Plugin: ' + GetFileName(plugin));
         AddMessage(' ');
 
+        if not HasMaster(plugin, GetFileName(master)) then begin
+            AddMessage('Add master to plugin');
+            AddMasterIfMissing(plugin, GetFileName(master));
+            AddMessage(' ');
+        end;
+
         masterCOBJ := GroupBySignature(master, 'COBJ');
         pluginCOBJ := GroupBySignature(plugin, 'COBJ');
         if bDebug then begin
@@ -529,7 +535,6 @@ unit userscript;
                 end;
             end;
 
-            
             if GetFile(plugin) <> GetFileName(GetFile(element)) then begin
                 AddMessage('    Add to plugin');
                 element := wbCopyElementToFile(elementMISC, plugin, false, true);
