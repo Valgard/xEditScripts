@@ -69,7 +69,6 @@ unit userscript;
         sFile : IInterface;
     begin
         slMasterFilename.Clear();
-        AddMessage('123');
 
         for i := 0 to Pred(clMasters.Items.Count) do begin
             if(clMasters.Checked[i]) then begin
