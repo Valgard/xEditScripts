@@ -271,10 +271,11 @@ unit userscript;
 
             lblVersion := TLabel.Create(frm);
             lblVersion.Parent := frm;
+            lblVersion.Alignment := taRightJustify;
             lblVersion.Caption := 'Version ' + scriptVersion;
-            lblVersion.Width := 60;
+            lblVersion.Width := 100;
             lblVersion.Top := frm.Height - lblVersion.Height - 35;
-            lblVersion.Left := frm.Width - lblVersion.Width - 7;
+            lblVersion.Left := frm.Width - lblVersion.Width - 13;
             lblVersion.OnMouseDown := lblVersionOnMouseDown;
 
             btnOk := TButton.Create(frm);
