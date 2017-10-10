@@ -345,12 +345,6 @@ unit userscript;
         AddMessage('Plugin: ' + GetFileName(plugin));
         AddMessage(' ');
 
-        if not HasMaster(plugin, GetFileName(master)) then begin
-            AddMessage('Add master to plugin');
-            AddMasterIfMissing(plugin, GetFileName(master));
-            AddMessage(' ');
-        end;
-
         masterCOBJ := GroupBySignature(master, 'COBJ');
         pluginCOBJ := GroupBySignature(plugin, 'COBJ');
         if bDebug then begin
@@ -509,6 +503,12 @@ unit userscript;
                         continue;
                     end;
                 end;
+            end;
+
+            if not HasMaster(plugin, GetFileName(master)) then begin
+                AddMessage('Add master to plugin');
+                AddMasterIfMissing(plugin, GetFileName(master));
+                AddMessage(' ');
             end;
 
             AddMessage('Change ' + ShortName(elementMISC));
