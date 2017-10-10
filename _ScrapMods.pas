@@ -583,7 +583,7 @@ unit userscript;
                     end;
                 end;
 
-                if GetFile(plugin) <> GetFileName(GetFile(element)) then begin
+                if GetFileName(GetFile(plugin)) <> GetFileName(GetFile(element)) then begin
                     AddMessage('    Add to plugin');
                     element := wbCopyElementToFile(elementMISC, plugin, false, true);
                     if not Assigned(element) then begin
