@@ -7,7 +7,7 @@
 unit userscript;
 
     const
-        scriptVersion = '1.0';
+        scriptVersion = '1.1';
 
     var
         slMasters, slPlugins : TStringList;
@@ -15,12 +15,12 @@ unit userscript;
 
         i, mastersLastIndex, pluginsLastIndex : Integer;
 
-        bRunScript, bWeapons, bArmors, bOverwrite, bVerbose, bDebug : boolean;
+        bRunScript, bWeapons, bArmors, bNPCs, bOverwrite, bVerbose, bDebug : boolean;
 
         frm : TForm;
         lblMasters, lblPlugins, lblVersion : TLabel;
         cmbMasters, cmbPlugins : TComboBox;
-        cbWeapons, cbArmors, cbOverwrite, cbVerbose, bVerbosPrevious: TCheckBox;
+        cbWeapons, cbArmors, cbNPCs, cbOverwrite, cbVerbose, bVerbosPrevious: TCheckBox;
         btnOk, btnCancel : TButtom;
 
     procedure FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
@@ -78,6 +78,11 @@ unit userscript;
     procedure cbArmorsOnClick(Sender: TObject);
     begin
         bArmors := cbArmors.State;
+    end;
+
+    procedure cbNPCsOnClick(Sender: TObject);
+    begin
+        bNPCs := cbNPCs.State;
     end;
 
     procedure cbOverwriteOnClick(Sender: TObject);
@@ -138,7 +143,7 @@ unit userscript;
             frm.BorderStyle := bsDialog;
             frm.Caption := wbGameName + ' Scrap Mods ' + scriptVersion;
             frm.Width := 320;
-            frm.Height := 230;
+            frm.Height := 260;
             frm.Position := poScreenCenter;
             frm.KeyPreview := True;
             frm.OnKeyDown := FormKeyDown;
@@ -185,18 +190,29 @@ unit userscript;
             cbWeapons := TCheckBox.Create(frm);
             cbWeapons.parent := frm;
             cbWeapons.Caption := '&Weapons';
+            cbWeapons.Width := 130;
             cbWeapons.Top := lblPlugins.Top + lblPlugins.Height + 16;
             cbWeapons.Left := lblMasters.Left;
             cbWeapons.OnClick := cbWeaponsOnClick;
             cbWeapons.State := bWeapons;
-            
+
             cbArmors := TCheckBox.Create(frm);
             cbArmors.parent := frm;
             cbArmors.Caption := '&Armors';
+            cbArmors.Width := 130;
             cbArmors.Top := cbWeapons.Top + cbWeapons.Height + 8;
             cbArmors.Left := lblMasters.Left;
             cbArmors.OnClick := cbArmorsOnClick;
             cbArmors.State := bArmors;
+
+            cbNPCs := TCheckBox.Create(frm);
+            cbNPCs.parent := frm;
+            cbNPCs.Caption := '&Non-player characters';
+            cbNPCs.Width := 130;
+            cbNPCs.Top := cbArmors.Top + cbArmors.Height + 8;
+            cbNPCs.Left := lblMasters.Left;
+            cbNPCs.OnClick := cbNPCsOnClick;
+            cbNPCs.State := bNPCs;
 
             cbOverwrite := TCheckBox.Create(frm);
             cbOverwrite.parent := frm;
@@ -217,7 +233,7 @@ unit userscript;
             btnOk := TButton.Create(frm);
             btnOk.Parent := frm;
             btnOk.Caption := '&OK';
-            btnOk.Top := cbVerbose.Top + cbVerbose.Height + 20;
+            btnOk.Top := cbNPCs.Top + cbNPCs.Height + 20;
             btnOk.Width := 100;
             btnOk.Left := Floor((frm.Width - (2 * btnOk.Width)) / 2) - 12;
             btnOk.ModalResult := mrOk;
@@ -255,9 +271,10 @@ unit userscript;
 
         mastersLastIndex := 0;
         pluginsLastIndex := 0;
-        
+
         bWeapons := true;
         bArmors := true;
+        bNPCs := true;
         bOverwrite := false;
         bVerbose := false;
         bVerbosPrevious := false;
@@ -327,7 +344,6 @@ unit userscript;
         AddMessage('Master: ' + GetFileName(master));
         AddMessage('Plugin: ' + GetFileName(plugin));
         AddMessage(' ');
-        
 
         masterCOBJ := GroupBySignature(master, 'COBJ');
         pluginCOBJ := GroupBySignature(plugin, 'COBJ');
@@ -382,7 +398,7 @@ unit userscript;
                     continue;
                 end;
             end;
-            
+
             if not bArmors then begin
                 if GetEditValue(ElementByPath(elementOMOD, 'DATA\Form Type')) = 'Armor' then begin
                     if bVerbose then begin
@@ -394,16 +410,30 @@ unit userscript;
                     continue;
                 end;
             end;
-            
-            if GetEditValue(ElementByPath(elementOMOD, 'DATA\Form Type')) <> 'Weapon' then begin
-                if GetEditValue(ElementByPath(elementOMOD, 'DATA\Form Type')) <> 'Armor' then begin
+
+            if not bNPCs then begin
+                if GetEditValue(ElementByPath(elementOMOD, 'DATA\Form Type')) = 'Non-player character' then begin
                     if bVerbose then begin
-                        AddMessage('Skip ' +  ShortName(elementCOBJ) + ' [unknown form type import]');
+                        AddMessage('Skip ' +  ShortName(elementCOBJ) + ' [no non-player character import]');
                     end;
                     if bDebug then begin
                         AddMessage(' ');
                     end;
                     continue;
+                end;
+            end;
+
+            if GetEditValue(ElementByPath(elementOMOD, 'DATA\Form Type')) <> 'Weapon' then begin
+                if GetEditValue(ElementByPath(elementOMOD, 'DATA\Form Type')) <> 'Armor' then begin
+                    if GetEditValue(ElementByPath(elementOMOD, 'DATA\Form Type')) <> 'Non-player character' then begin
+                        if bVerbose then begin
+                            AddMessage('Skip ' +  ShortName(elementCOBJ) + ' [unknown form type import]');
+                        end;
+                        if bDebug then begin
+                            AddMessage(' ');
+                        end;
+                        continue;
+                    end;
                 end;
             end;
 
@@ -422,15 +452,10 @@ unit userscript;
                 continue;
             end;
 
-            element := RecordByFormID(plugin, FixedFormID(elementMISC), false);
-            if bDebug then begin
-                AddMessage('[DEBUG] {5} element: ' + FullPath(element));
-            end;
-
             components := ElementByPath(elementCOBJ, 'FVPA');
             if bDebug then begin
-                AddMessage('[DEBUG] {6} elementCOBJ components: ' + FullPath(components));
-                AddMessage('[DEBUG] {6} elementCOBJ components count: ' + IntToStr(ElementCount(components)));
+                AddMessage('[DEBUG] {5} elementCOBJ components count: ' + IntToStr(ElementCount(components)));
+                AddMessage('[DEBUG] {5} elementCOBJ components: ' + FullPath(components));
             end;
 
             if not Assigned(components) then begin
@@ -455,6 +480,11 @@ unit userscript;
                 end;
             end;
 
+            element := RecordByFormID(plugin, FixedFormID(elementMISC), false);
+            if bDebug then begin
+                AddMessage('[DEBUG] {6} element: ' + FullPath(element));
+            end;
+
             componentsNew := ElementByPath(element, 'CVPA');
             if bDebug then begin
                 AddMessage('[DEBUG] {7} element components: ' + FullPath(componentsNew));
@@ -474,7 +504,7 @@ unit userscript;
                     end;
                 end;
             end;
-            
+
             AddMessage('Change ' + ShortName(elementMISC));
 
             if not Assigned(element) then begin
@@ -489,6 +519,18 @@ unit userscript;
             end;
 
             if FullPath(element) = FullPath(elementMISC) then begin
+                AddMessage('    Add to plugin');
+                element := wbCopyElementToFile(elementMISC, plugin, false, true);
+                if not Assigned(element) then begin
+                    // MessageBeep(MB_ICONHAND);
+                    AddMessage('[ERROR] Can''t copy base record as new');
+                    AddMessage(' ');
+                    continue;
+                end;
+            end;
+
+            
+            if GetFile(plugin) <> GetFileName(GetFile(element)) then begin
                 AddMessage('    Add to plugin');
                 element := wbCopyElementToFile(elementMISC, plugin, false, true);
                 if not Assigned(element) then begin
@@ -533,12 +575,12 @@ unit userscript;
                 SetElementEditValues(componentNew, 'Count', GetElementEditValues(component, 'Count'));
 
                 if bDebug then begin
-                    AddMessage('[DEBUG] {8} elementCOBJ component[:' + IntToStr(j) + ']: ' + FullPath(component));
+                    AddMessage('[DEBUG] {8} elementCOBJ component[' + IntToStr(j) + ']: ' + FullPath(component));
                     AddMessage('[DEBUG] {8} elementCOBJ component[' + IntToStr(j) + '] value: ' + GetElementEditValues(component, 'Component'));
-                    AddMessage('[DEBUG] {8} elementCOBJ component[:' + IntToStr(j) + '] count: ' + GetElementEditValues(component, 'Count'));
-                    AddMessage('[DEBUG] {8} element component[:' + IntToStr(j) + ']: ' + FullPath(componentNew));
-                    AddMessage('[DEBUG] {8} element component[:' + IntToStr(j) + '] value: ' + GetElementEditValues(ElementByPath(componentNew, 'Component')));
-                    AddMessage('[DEBUG] {8} element component[:' + IntToStr(j) + '] count: ' + GetElementEditValues(ElementByPath(componentNew, 'Count')));
+                    AddMessage('[DEBUG] {8} elementCOBJ component[' + IntToStr(j) + '] count: ' + GetElementEditValues(component, 'Count'));
+                    AddMessage('[DEBUG] {8} element component[' + IntToStr(j) + ']: ' + FullPath(componentNew));
+                    AddMessage('[DEBUG] {8} element component[' + IntToStr(j) + '] value: ' + GetElementEditValues(componentNew, 'Component'));
+                    AddMessage('[DEBUG] {8} element component[' + IntToStr(j) + '] count: ' + GetElementEditValues(componentNew, 'Count'));
                 end;
             end;
             AddMessage(' ');
