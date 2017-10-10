@@ -135,7 +135,7 @@ unit userscript;
 
     procedure ShowForm;
     var
-        i: integer;
+        j: integer;
     begin
         frm := TForm.Create(nil);
         try
@@ -162,8 +162,12 @@ unit userscript;
             clMasters.OnClick := clMastersOnClick;
             for i := 0 to Pred(slMasters.Count) do begin
                 clMasters.Items.Add(slMasters[i]);
+                for j := 0 to Pred(slMasterFilename.Count) do begin
+                    if slMasters[i] = slMasterFilename[j] then begin
+                        clMasters.Checked[i] := true;
+                    end;
+                end
             end;
-            clMasters.Checked[0] := true;
             clMasters.Height := clMasters.Items.Count * 14;
 
             lblPlugins := TLabel.Create(frm);
@@ -315,7 +319,9 @@ unit userscript;
             end;
         end;
 
-        slMasterFilename.Add(slMasters[0]);
+        for i := 0 to Pred(slMasters.Count) do begin
+          slMasterFilename.Add(slMasters[i]);
+        end;
         pluginFilename := slPlugins[pluginsLastIndex];
 
         ShowForm;
