@@ -7,7 +7,7 @@
 unit userscript;
 
     const
-        scriptVersion = '1.3';
+        scriptVersion = '1.4';
 
     var
         pluginFilename : string;
@@ -20,6 +20,8 @@ unit userscript;
         frm : TForm;
         lblMasters, lblPlugins, lblVersion : TLabel;
         clMasters : TCheckListBox;
+        mnMasters : TPopupMenu;
+        MenuItem: TMenuItem;
         cmbPlugins : TComboBox;
         cbWeapons, cbArmors, cbNPCs, cbOverwrite, cbVerbose, bVerbosPrevious: TCheckBox;
         btnOk, btnCancel : TButtom;
@@ -41,12 +43,33 @@ unit userscript;
         bRunScript := true;
     end;
 
-    procedure clMastersOnClick(Sender: TObject);
+    procedure SelectAllClick(Sender: TObject);
+    begin
+        clMasters.CheckAll(cbChecked, True, True);
+        clMastersOnClickCheck(Sender);
+    end;
+
+    procedure SelectNoneClick(Sender: TObject);
+    begin
+        clMasters.CheckAll(cbUnchecked, True, True);
+        clMastersOnClickCheck(Sender);
+    end;
+
+    procedure SelectInvertClick(Sender: TObject);
+    begin
+        for i := 0 to Pred(clMasters.Items.Count) do begin
+            clMasters.Checked[i] := not clMasters.Checked[i];
+        end;
+        clMastersOnClickCheck(Sender);
+    end;
+
+    procedure clMastersOnClickCheck(Sender: TObject);
     var
         sFilename : string;
         sFile : IInterface;
     begin
         slMasterFilename.Clear();
+        AddMessage('123');
 
         for i := 0 to Pred(clMasters.Items.Count) do begin
             if(clMasters.Checked[i]) then begin
@@ -147,6 +170,23 @@ unit userscript;
             frm.OnKeyDown := FormKeyDown;
             frm.OnClose := frmFormClose;
 
+            mnMasters := TPopupMenu.Create(frm);
+
+            MenuItem := TMenuItem.Create(mnMasters);
+            MenuItem.Caption := 'Select &All';
+            MenuItem.OnClick := SelectAllClick;
+            mnMasters.Items.Add(MenuItem);
+
+            MenuItem := TMenuItem.Create(mnMasters);
+            MenuItem.Caption := 'Select &None';
+            MenuItem.OnClick := SelectNoneClick;
+            mnMasters.Items.Add(MenuItem);
+
+            MenuItem := TMenuItem.Create(mnMasters);
+            MenuItem.Caption := '&Invert Selection';
+            MenuItem.OnClick := SelectInvertClick;
+            mnMasters.Items.Add(MenuItem);
+
             lblMasters := TLabel.Create(frm);
             lblMasters.Parent := frm;
             lblMasters.Caption := 'Master:';
@@ -155,11 +195,12 @@ unit userscript;
             lblMasters.Width := 35;
 
             clMasters := TCheckListBox.Create(frm);
+            clMasters.PopupMenu := mnMasters;
             clMasters.Parent := frm;
             clMasters.Top := lblMasters.Top - 4;
             clMasters.Left := lblMasters.Left + lblMasters.Width + 16;
             clMasters.Width := 200;
-            clMasters.OnClick := clMastersOnClick;
+            clMasters.OnClick := clMastersOnClickCheck;
             for i := 0 to Pred(slMasters.Count) do begin
                 clMasters.Items.Add(slMasters[i]);
                 for j := 0 to Pred(slMasterFilename.Count) do begin
