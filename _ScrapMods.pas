@@ -7,7 +7,7 @@
 unit userscript;
 
     const
-        scriptVersion = '1.4';
+        scriptVersion = '1.4.1';
 
     var
         pluginFilename : string;
@@ -118,23 +118,18 @@ unit userscript;
 
     procedure lblVersionOnMouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
     begin
-        if Button = mbRight then begin
-            // AddMessage('Richt-Click');
-            // if Shift = [ssLeft, ssCtrl, ssDouble] then begin
-                // if (ssDouble in Shift) then begin
-                    bDebug := not bDebug;
-                    if bDebug then begin
-                      AddMessage('DEBUG ON');
-                      cbVerbose.Enabled := false;
-                      bVerbosPrevious := cbVerbose.State;
-                      cbVerbose.State := true;
-                    end else begin
-                      AddMessage('DEBUG OFF');
-                      cbVerbose.Enabled := true;
-                      cbVerbose.State := bVerbosPrevious;
-                    end;
-                // end;
-            // end;
+        if Shift = [ssRight, ssCtrl] then begin
+            bDebug := not bDebug;
+            if bDebug then begin
+              AddMessage('DEBUG ON');
+              cbVerbose.Enabled := false;
+              bVerbosPrevious := cbVerbose.State;
+              cbVerbose.State := true;
+            end else begin
+              AddMessage('DEBUG OFF');
+              cbVerbose.Enabled := true;
+              cbVerbose.State := bVerbosPrevious;
+            end;
         end;
     end;
 
